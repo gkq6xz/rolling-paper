@@ -3,20 +3,35 @@
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+const members = [
+  ['육은영', '🐶', 'lime'],
+  ['010', '🐰', 'pink'],
+  ['노크', '🐻', 'blue'],
+  ['모래', '🐱', 'mint'],
+  ['미래', '🐧', 'sky'],
+  ['버디', '🐸', 'green'],
+  ['설아', '🐑', 'yellow'],
+  ['시노', '🐇', 'rose'],
+] as const;
+
 export default function Home() {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [creatorName, setCreatorName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
 
   async function createPaper(e: FormEvent) {
     e.preventDefault();
-    setLoading(true); setError('');
+    setLoading(true);
+    setError('');
+
     try {
       const res = await fetch('/api/papers', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, creatorName })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, creatorName }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || '생성에 실패했어요.');
@@ -24,28 +39,133 @@ export default function Home() {
       router.push(`/r/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : '오류가 발생했어요.');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   }
 
-  return <main className="wrap">
-    <nav className="nav"><div className="brand">💌 몽글 롤링페이퍼</div><span className="pill">회원가입 없이 바로 시작</span></nav>
-    <section className="hero">
-      <div>
-        <h1>마음을 모아<br/>한 장의 편지로.</h1>
-        <p>링크 하나만 공유하면 친구들이 바로 메시지를 남길 수 있어요. 생일, 졸업, 퇴사, 응원 메시지를 예쁜 카드로 모아 보세요.</p>
-        <form className="panel stack" onSubmit={createPaper}>
-          <div><div className="label">롤링페이퍼 제목</div><input className="input" maxLength={80} required value={title} onChange={e=>setTitle(e.target.value)} placeholder="예: 은영이 생일 축하해 🎂"/></div>
-          <div><div className="label">만든 사람</div><input className="input" maxLength={30} required value={creatorName} onChange={e=>setCreatorName(e.target.value)} placeholder="예: 미래"/></div>
-          {error && <div className="status">{error}</div>}
-          <button className="button" disabled={loading}>{loading ? '만드는 중...' : '롤링페이퍼 만들기'}</button>
-        </form>
+  return (
+    <main className="band-shell">
+      <header className="topbar">
+        <div className="site-title">두가쟈두가쟈 (8) &lt;</div>
+        <div className="search">⌕ <span>게시글, 작성자 검색</span></div>
+        <div className="top-actions"><span>♢</span><span className="top-avatar">🐶</span></div>
+      </header>
+
+      <div className="band-layout">
+        <aside className="left-nav">
+          <button className="nav-item active">⌂ <span>홈</span></button>
+          <button className="nav-item" onClick={() => setShowCreate(true)}>✎ <span>롤링페이퍼 만들기</span></button>
+          <button className="nav-item">♙ <span>멤버</span></button>
+          <button className="nav-item">⚙ <span>설정</span></button>
+        </aside>
+
+        <section className="center-column">
+          <section className="band-cover">
+            <div className="cover-cloud cloud-1" />
+            <div className="cover-cloud cloud-2" />
+            <div className="cover-avatar">🐶</div>
+            <div className="cover-info">
+              <h1>두가쟈두가쟈 (8) &lt;</h1>
+              <p>멤버 8명&nbsp;&nbsp;|&nbsp;&nbsp;만든 사람 육은영&nbsp;&nbsp;|&nbsp;&nbsp;2026. 7. 9. 생성</p>
+              <strong>은영이의말안들려?</strong>
+            </div>
+            <div className="cover-actions">
+              <button onClick={() => navigator.clipboard?.writeText(window.location.href)}>↗ 공유하기</button>
+              <button>•••</button>
+            </div>
+          </section>
+
+          <section className="composer">
+            <div className="mini-avatar">🐶</div>
+            <button className="composer-input" onClick={() => setShowCreate(true)}>
+              지금, 두가쟈두가쟈에 롤링페이퍼를 만들어보세요!
+            </button>
+            <button className="composer-button" onClick={() => setShowCreate(true)}>만들기</button>
+          </section>
+
+          {showCreate && (
+            <section className="create-card">
+              <div className="create-head">
+                <div>
+                  <strong>새 롤링페이퍼 만들기</strong>
+                  <p>친구들에게 공유할 롤링페이퍼를 만들어 보세요.</p>
+                </div>
+                <button className="close" onClick={() => setShowCreate(false)}>×</button>
+              </div>
+              <form onSubmit={createPaper} className="create-form">
+                <label>
+                  롤링페이퍼 제목
+                  <input required maxLength={80} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="예: 은영이 생일 축하해 🎂" />
+                </label>
+                <label>
+                  만든 사람
+                  <input required maxLength={30} value={creatorName} onChange={(e) => setCreatorName(e.target.value)} placeholder="예: 미래" />
+                </label>
+                {error && <div className="form-error">{error}</div>}
+                <button className="primary" disabled={loading}>{loading ? '만드는 중...' : '롤링페이퍼 만들기'}</button>
+              </form>
+            </section>
+          )}
+
+          <div className="sort-row">최신순⌄</div>
+
+          <article className="feed-card">
+            <div className="feed-head">
+              <div className="feed-avatar">🐶</div>
+              <div>
+                <strong>육은영</strong>
+                <span>2026. 7. 9. 12:30</span>
+              </div>
+              <button>•••</button>
+            </div>
+            <div className="feed-copy">
+              <p>순장팟 MT</p>
+              <p>처음부터 이렇게 될 줄 알았던 사람은 아무도 없었다.</p>
+              <p>육은영, 010, 노크, 모래, 미래, 버디, 설아, 시노.</p>
+              <p>고작 8 명이 2 박 3 일로 놀러 왔을 뿐이었다.</p>
+              <p>문제는 방 배정을 시작하면서부터였다.</p>
+              <p>“야, 잠깐만”</p>
+            </div>
+            <div className="lake-photo" aria-label="호수 풍경 이미지">
+              <div className="lake-sky" />
+              <div className="mountain m1" />
+              <div className="mountain m2" />
+              <div className="lake" />
+            </div>
+            <div className="reactions"><span>♥ <b>8</b></span><span>▢ 댓글</span></div>
+          </article>
+        </section>
+
+        <aside className="right-column">
+          <section className="side-card">
+            <div className="side-title"><strong>멤버 <em>8</em></strong><span>전체 보기 ›</span></div>
+            <div className="member-grid">
+              {members.map(([name, emoji, color]) => (
+                <div className="member" key={name}>
+                  <div className={`member-avatar ${color}`}>{emoji}</div>
+                  <span>{name}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="side-card">
+            <div className="side-title"><strong>최근 사진</strong><span>전체 보기 ›</span></div>
+            <div className="photo-grid">
+              <div className="thumb thumb-lake" />
+              <div className="thumb thumb-sky" />
+              <div className="thumb thumb-flower" />
+              <div className="thumb thumb-road" />
+            </div>
+          </section>
+
+          <section className="side-card">
+            <div className="side-title"><strong>공지사항</strong><span>＋</span></div>
+            <div className="notice">📢 <span>등록된 공지사항이 없습니다.</span></div>
+          </section>
+        </aside>
       </div>
-      <div className="preview">
-        <div className="note yellow"><strong>미래</strong>생일 축하해!! 올해도 재밌는 추억 많이 만들자 💛</div>
-        <div className="note pink"><strong>설아</strong>늘 건강하고 행복해야 돼. 맛있는 거 먹으러 가자 🎀</div>
-        <div className="note blue"><strong>은영</strong>이렇게 모아 보니까 더 귀엽지 ☁️</div>
-      </div>
-    </section>
-    <div className="footer">작고 귀엽고 간단한 롤링페이퍼 서비스</div>
-  </main>
+    </main>
+  );
 }
